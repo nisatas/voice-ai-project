@@ -1,0 +1,12 @@
+# RandevuSes v2.0 — Python Bagimliliklari
+# pip install -r requirements.txt
+
+fastapi==0.115.0       # Web sunucu framework'u
+uvicorn==0.30.0        # ASGI sunucu (FastAPI'yi calistirir)
+python-dotenv==1.0.1   # .env dosyasindan key okuma
+httpx==0.27.0          # Async HTTP istemcisi (API cagirilari icin)
+python-multipart==0.0.9  # Dosya yukleme destegi (ses dosyasi)
+google-api-python-client==2.141.0
+google-auth==2.34.0
+google-auth-httplib2==0.2.0
+twilio==9.0.0              # Telefon entegrasyonu (Twilio SDK)

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RandevuSes — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+.top{background:#1e293b;border-bottom:1px solid #334155;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.top h1{font-size:20px;font-weight:700;background:linear-gradient(135deg,#3b82f6,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.top p{font-size:12px;color:#64748b}
+.wrap{max-width:900px;margin:0 auto;padding:24px}
+
+/* Kartlar */
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:20px}
+.card h2{font-size:16px;font-weight:600;margin-bottom:16px;color:#f1f5f9}
+.card h3{font-size:13px;font-weight:500;margin:16px 0 8px;color:#94a3b8}
+
+/* Form */
+.row{display:flex;gap:12px;margin-bottom:12px}
+.row>*{flex:1}
+label{display:block;font-size:11px;color:#94a3b8;margin-bottom:4px}
+input,textarea,select{width:100%;padding:9px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;font-family:'Inter',sans-serif;outline:none}
+input:focus,textarea:focus{border-color:#3b82f6}
+textarea{resize:vertical;min-height:60px}
+input:disabled{opacity:.65;cursor:not-allowed}
+
+/* Dinamik listeler */
+.dyn-list{margin-bottom:8px}
+.dyn-item{display:flex;gap:8px;margin-bottom:6px;align-items:center}
+.dyn-item input{flex:1}
+.dyn-item .sm{max-width:80px}
+.btn-rm{width:28px;height:28px;border-radius:6px;border:1px solid #ef4444;background:transparent;color:#ef4444;cursor:pointer;font-size:14px;flex-shrink:0}
+.btn-add{padding:6px 14px;border-radius:6px;border:1px solid #334155;background:transparent;color:#94a3b8;font-size:12px;cursor:pointer}
+.btn-add:hover{background:#334155;color:#e2e8f0}
+
+/* Ana buton */
+.btn-main{width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;margin-top:8px}
+.btn-main:hover{opacity:.9}
+.btn-main:disabled{opacity:.4;cursor:not-allowed}
+
+/* Isletme listesi */
+.biz-card{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.biz-info h3{font-size:14px;color:#f1f5f9;margin-bottom:2px}
+.biz-info p{font-size:11px;color:#64748b}
+.biz-sub{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.biz-sub b{display:block;font-size:11px;color:#94a3b8;margin-bottom:4px}
+.mini{margin:0;padding-left:16px}
+.mini li{font-size:12px;color:#cbd5e1;margin:2px 0}
+.muted{font-size:12px;color:#64748b;margin-top:2px}
+.biz-actions{display:flex;gap:8px}
+.btn-chat{padding:6px 14px;border-radius:6px;border:none;background:#22c55e;color:#fff;font-size:12px;cursor:pointer;text-decoration:none;font-family:'Inter',sans-serif}
+.btn-del{padding:6px 10px;border-radius:6px;border:1px solid #334155;background:transparent;color:#64748b;font-size:12px;cursor:pointer}
+.btn-del:hover{border-color:#ef4444;color:#ef4444}
+
+.empty{text-align:center;padding:40px;color:#475569;font-size:13px}
+.success{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#22c55e;padding:10px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;display:none}
+</style>
+</head>
+<body>
+<div class="top">
+    <div><h1>RandevuSes</h1><p>B2B Sesli AI Resepsiyon Asistani — Admin Panel</p></div>
+</div>
+<div class="wrap">
+
+<!-- Basari mesaji -->
+<div class="success" id="successMsg"></div>
+
+<!-- Mevcut isletmeler -->
+<div class="card">
+    <h2>Isletmelerim</h2>
+    <div id="bizList"><div class="empty">Henuz isletme yok. Asagidan olusturun.</div></div>
+</div>
+
+<!-- Yeni isletme formu -->
+<div class="card">
+    <h2>Yeni AI Agent Olustur</h2>
+
+    <div class="row">
+        <div><label>Isletme Adi *</label><input id="f_name" placeholder="Gulus Dis Klinigi"></div>
+        <div><label>AI Asistan Adi</label><input id="f_agent" placeholder="Elif" value="Elif"></div>
+    </div>
+    <div class="row">
+        <div><label>Sektor</label><input id="f_sector" placeholder="Dis Klinigi"></div>
+        <div><label>Twilio Telefon Numarasi *</label><input id="f_phone" placeholder="+13632081990 (Twilio'dan aldigin numara)"></div>
+    </div>
+    <div class="row">
+        <div><label>Adres</label><input id="f_address" placeholder="Bagdat Cad. No:42, Kadikoy"></div>
+        <div><label>Calisma Saatleri</label><input id="f_hours" placeholder="Pzt-Cum 09:00-18:00"></div>
+    </div>
+
+    <!-- ✅ GOOGLE CALENDAR ID (EKLENDI) -->
+    <div class="row">
+        <div>
+            <label>Google Calendar ID (opsiyonel)</label>
+            <input id="f_calid" placeholder="uguremirazi@gmail.com veya ...@group.calendar.google.com">
+        </div>
+        <div>
+            <label>Hatirlatma</label>
+            <input disabled value="Takvimi service account ile paylas (Make changes to events)">
+        </div>
+    </div>
+
+    <!-- Hizmetler -->
+    <h3>Hizmetler</h3>
+    <div id="servicesList" class="dyn-list"></div>
+    <button class="btn-add" onclick="addService()">+ Hizmet Ekle</button>
+
+    <!-- Personel -->
+    <h3>Personel / Doktorlar</h3>
+    <div id="staffList" class="dyn-list"></div>
+    <button class="btn-add" onclick="addStaff()">+ Personel Ekle</button>
+
+    <!-- Kampanyalar -->
+    <h3>Kampanyalar</h3>
+    <div id="campList" class="dyn-list"></div>
+    <button class="btn-add" onclick="addCampaign()">+ Kampanya Ekle</button>
+
+    <!-- Ozel kurallar -->
+    <h3>Ozel Kurallar (AI'a talimatlar)</h3>
+    <div id="rulesList" class="dyn-list"></div>
+    <button class="btn-add" onclick="addRule()">+ Kural Ekle</button>
+
+    <button class="btn-main" id="createBtn" onclick="createBusiness()">AI Agent Olustur</button>
+</div>
+</div>
+
+<script>
+// ═══ Dinamik Liste Yonetimi ═══
+
+function addService() {
+    const el = document.getElementById('servicesList');
+    const div = document.createElement('div');
+    div.className = 'dyn-item';
+    div.innerHTML = '<input placeholder="Hizmet adi (orn: Dis temizligi)"><input class="sm" placeholder="dk" type="number"><input class="sm" placeholder="TL" type="number"><button class="btn-rm" onclick="this.parentElement.remove()">x</button>';
+    el.appendChild(div);
+}
+
+function addStaff() {
+    const el = document.getElementById('staffList');
+    const div = document.createElement('div');
+    div.className = 'dyn-item';
+    div.innerHTML = '<input placeholder="Isim (orn: Dr. Nisa Atas)"><input placeholder="Gunler (orn: Pzt-Cum)"><input class="sm" placeholder="Saat"><button class="btn-rm" onclick="this.parentElement.remove()">x</button>';
+    el.appendChild(div);
+}
+
+function addCampaign() {
+    const el = document.getElementById('campList');
+    const div = document.createElement('div');
+    div.className = 'dyn-item';
+    div.innerHTML = '<input placeholder="Kampanya (orn: Bu ay %20 indirim)"><button class="btn-rm" onclick="this.parentElement.remove()">x</button>';
+    el.appendChild(div);
+}
+
+function addRule() {
+    const el = document.getElementById('rulesList');
+    const div = document.createElement('div');
+    div.className = 'dyn-item';
+    div.innerHTML = '<input placeholder="Kural (orn: Tibbi tavsiye verme)"><button class="btn-rm" onclick="this.parentElement.remove()">x</button>';
+    el.appendChild(div);
+}
+
+// Baslangicta birer tane ekle
+addService(); addStaff(); addCampaign(); addRule();
+
+// ═══ Isletme Olustur ═══
+
+async function createBusiness() {
+    const name = document.getElementById('f_name').value.trim();
+    if (!name) { alert('Isletme adi gerekli!'); return; }
+
+    const btn = document.getElementById('createBtn');
+    btn.disabled = true; btn.textContent = 'Olusturuluyor...';
+
+    // Hizmetleri topla
+    const services = [];
+    document.querySelectorAll('#servicesList .dyn-item').forEach(item => {
+        const inputs = item.querySelectorAll('input');
+        const n = inputs[0].value.trim();
+        if (n) services.push({ name: n, duration: parseInt(inputs[1].value)||30, price: parseInt(inputs[2].value)||0 });
+    });
+
+    // Personeli topla
+    const staff = [];
+    document.querySelectorAll('#staffList .dyn-item').forEach(item => {
+        const inputs = item.querySelectorAll('input');
+        const n = inputs[0].value.trim();
+        if (n) staff.push({ name: n, working_days: inputs[1].value.trim(), hours: inputs[2].value.trim() });
+    });
+
+    // Kampanyalari topla
+    const campaigns = [];
+    document.querySelectorAll('#campList .dyn-item').forEach(item => {
+        const v = item.querySelector('input').value.trim();
+        if (v) campaigns.push(v);
+    });
+
+    // Kurallari topla
+    const custom_rules = [];
+    document.querySelectorAll('#rulesList .dyn-item').forEach(item => {
+        const v = item.querySelector('input').value.trim();
+        if (v) custom_rules.push(v);
+    });
+
+    // ✅ Calendar ID (opsiyonel)
+    const google_calendar_id = document.getElementById('f_calid').value.trim();
+
+    const body = {
+        name,
+        agent_name: document.getElementById('f_agent').value.trim() || 'Asistan',
+        sector: document.getElementById('f_sector').value.trim(),
+        phone: document.getElementById('f_phone').value.trim(),
+        address: document.getElementById('f_address').value.trim(),
+        working_hours: document.getElementById('f_hours').value.trim(),
+
+        // ✅ EKLENDI
+        google_calendar_id,
+
+        services, staff, campaigns, custom_rules,
+    };
+
+    try {
+        const resp = await fetch('/api/businesses', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        });
+
+        if (!resp.ok) {
+            const t = await resp.text();
+            throw new Error(t || ('HTTP ' + resp.status));
+        }
+
+        const biz = await resp.json();
+
+        // Basari
+        const msg = document.getElementById('successMsg');
+        msg.style.display = 'block';
+        msg.innerHTML = 'AI Agent olusturuldu! <a href="/chat/' + biz.slug + '" style="color:#22c55e;font-weight:600">Konusmaya Basla →</a>';
+
+        // Formu temizle
+        document.getElementById('f_name').value = '';
+        document.getElementById('f_calid').value = '';
+
+        // Listeyi yenile
+        loadBusinesses();
+    } catch(e) {
+        alert('Hata: ' + (e?.message || e));
+    }
+
+    btn.disabled = false; btn.textContent = 'AI Agent Olustur';
+}
+
+// ═══ Isletmeleri Listele ═══
+
+async function loadBusinesses() {
+    try {
+        const resp = await fetch('/api/businesses');
+        const list = await resp.json();
+        const el = document.getElementById('bizList');
+
+        if (!list.length) {
+            el.innerHTML = '<div class="empty">Henuz isletme yok.</div>';
+            return;
+        }
+
+        const renderServices = (b) => {
+            const sv = b.services || [];
+            if (!sv.length) return '<div class="muted">Hizmet girilmemiş</div>';
+            return '<ul class="mini">' + sv.map(s => {
+                const n = esc(s?.name || '');
+                const d = parseInt(s?.duration || 0);
+                const p = parseInt(s?.price || 0);
+                const tail = (p>0) ? ` — ${p} TL` : '';
+                const dur = (d>0) ? ` (${d} dk)` : '';
+                return `<li>${n}${dur}${tail}</li>`;
+            }).join('') + '</ul>';
+        };
+
+        const renderStaff = (b) => {
+            const st = b.staff || [];
+            if (!st.length) return '<div class="muted">Doktor/personel yok</div>';
+            return '<ul class="mini">' + st.map(p => `<li>${esc(p?.name||'')}</li>`).join('') + '</ul>';
+        };
+
+        el.innerHTML = list.map(b => `
+            <div class="biz-card">
+                <div class="biz-info">
+                    <h3>${esc(b.name)}</h3>
+                    <p>${esc(b.sector||'')} · ${esc(b.agent_name||'Asistan')} · ${(b.services||[]).length} hizmet</p>
+                    <div class="biz-sub">
+                        <div><b>Hizmetler</b>${renderServices(b)}</div>
+                        <div><b>Doktor/Personel</b>${renderStaff(b)}</div>
+                    </div>
+                </div>
+                <div class="biz-actions">
+                    <a href="/chat/${b.slug}" class="btn-chat">Konus</a>
+                    <button class="btn-del" onclick="delBiz('${b.slug}')">Sil</button>
+                </div>
+            </div>
+        `).join('');
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+
+async function delBiz(slug) {
+    if (!confirm('Bu isletmeyi silmek istediginize emin misiniz?')) return;
+    await fetch('/api/businesses/' + slug, { method: 'DELETE' });
+    loadBusinesses();
+}
+
+function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+// Sayfa yuklendiginde
+loadBusinesses();
+</script>
+</body>
+</html>

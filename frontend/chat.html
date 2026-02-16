@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{BIZ_NAME}} — AI Asistan</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.hdr{background:#1e293b;border-bottom:1px solid #334155;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.hdr-left{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.hdr h1{font-size:16px;font-weight:600}
+.hdr p{font-size:11px;color:#64748b}
+.badge{display:flex;align-items:center;gap:5px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);padding:4px 10px;border-radius:14px;font-size:11px;color:#22c55e}
+.dot{width:6px;height:6px;background:#22c55e;border-radius:50%;animation:p 2s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.4}}
+a.back{color:#64748b;text-decoration:none;font-size:12px;margin-right:12px}
+a.back:hover{color:#e2e8f0}
+
+.chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+.msg{display:flex;flex-direction:column;max-width:80%;animation:fi .2s ease}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.msg.u{align-self:flex-end}
+.msg.a{align-self:flex-start}
+.mn{font-size:10px;color:#64748b;margin-bottom:2px;padding:0 6px}
+.mb{padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5}
+.msg.u .mb{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border-bottom-right-radius:4px}
+.msg.a .mb{background:#1e293b;border:1px solid #334155;border-bottom-left-radius:4px}
+.tp{display:flex;gap:4px;padding:4px 0}
+.tp span{width:7px;height:7px;background:#64748b;border-radius:50%;animation:b 1.4s infinite}
+.tp span:nth-child(2){animation-delay:.2s}
+.tp span:nth-child(3){animation-delay:.4s}
+@keyframes b{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-6px);opacity:1}}
+.welcome{text-align:center;padding:40px 20px;color:#64748b}
+.welcome h2{font-size:18px;color:#e2e8f0;margin-bottom:6px}
+.welcome p{font-size:13px;max-width:360px;margin:0 auto;line-height:1.5}
+.st{text-align:center;font-size:11px;color:#64748b;padding:3px;min-height:18px}
+.st.err{color:#ef4444}
+.ctrl{background:#1e293b;border-top:1px solid #334155;padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:10px}
+.iw{flex:1;max-width:460px}
+.iw input{width:100%;padding:10px 12px;background:#0f172a;border:1px solid #334155;border-radius:10px;color:#e2e8f0;font-size:13px;font-family:'Inter',sans-serif;outline:none}
+.iw input:focus{border-color:#3b82f6}
+.bm{width:58px;height:58px;border-radius:50%;border:none;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.bm:hover{transform:scale(1.05);box-shadow:0 0 16px rgba(59,130,246,.4)}
+.bm.rec{background:linear-gradient(135deg,#ef4444,#dc2626);animation:rp 1.4s infinite}
+@keyframes rp{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 12px rgba(239,68,68,0)}}
+.bm.wait{background:linear-gradient(135deg,#f59e0b,#d97706);cursor:wait}
+.bm:disabled{opacity:.4;cursor:not-allowed}
+.bs{width:38px;height:38px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.br{padding:5px 10px;border-radius:6px;border:1px solid #334155;background:transparent;color:#94a3b8;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif}
+@media(max-width:640px){.msg{max-width:92%}.bm{width:50px;height:50px}}
+</style>
+</head>
+<body>
+<div class="hdr">
+    <div class="hdr-left">
+        <a href="/" class="back">← Panel</a>
+        <div class="logo">&#x1F3A4;</div>
+        <div><h1>{{BIZ_NAME}}</h1><p>AI Asistan — {{AGENT_NAME}}</p></div>
+    </div>
+    <div class="badge"><div class="dot"></div>Aktif</div>
+</div>
+<div class="chat" id="chat">
+    <div class="welcome" id="wel">
+        <h2>Merhaba! Ben {{AGENT_NAME}}.</h2>
+        <p>{{BIZ_NAME}} asistaniyim. Mikrofon butonuyla sesli veya metin kutusuna yazarak konusabilirsiniz.</p>
+    </div>
+</div>
+<div class="st" id="st"></div>
+<div class="ctrl">
+    <button class="br" onclick="resetChat()">&#x1F504;</button>
+    <div class="iw"><input id="ti" placeholder="Mesajinizi yazin..." onkeydown="if(event.key==='Enter')sendT()"></div>
+    <button class="bs" onclick="sendT()">&#x27A4;</button>
+    <button class="bm" id="mic" onclick="micTog()">&#x1F3A4;</button>
+</div>
+<script>
+const SLUG='{{SLUG}}';
+const AGENT='{{AGENT_NAME}}';
+let sid=null,rec=false,busy=false;
+const chatEl=document.getElementById('chat'),mic=document.getElementById('mic'),ti=document.getElementById('ti'),stEl=document.getElementById('st'),wel=document.getElementById('wel');
+
+function ss(t,e){stEl.textContent=t;stEl.className=e?'st err':'st'}
+
+// ═══ SES CALMA ═══
+let ac=null;
+function eac(){if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume()}
+document.addEventListener('click',()=>eac(),{once:false});
+
+// ═══ WAV KAYIT ═══
+// WebM/Opus yerine WAV formatinda kayit yapiyoruz.
+// Neden? STT modeli ham PCM/WAV sesi cok daha iyi tanir.
+// WebM compressed format, bazi sesli harfler kaybolabiliyor.
+
+let audioStream = null;
+let audioContext = null;
+let processor = null;
+let audioData = [];
+
+async function micTog(){if(busy)return;rec?micStop():await micStart()}
+
+async function micStart(){
+    try{
+        // Mikrofon ac — 44.1kHz (yuksek kalite = daha iyi tanima)
+        audioStream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                channelCount: 1
+            }
+        });
+
+        // AudioContext — tarayicinin native sample rate'ini kullan (genelde 44100 veya 48000)
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(audioStream);
+
+        // ScriptProcessor ile ham PCM verisi yakala
+        // 4096 = buffer boyutu (kucuk = daha az gecikme)
+        processor = audioContext.createScriptProcessor(4096, 1, 1);
+        audioData = [];
+
+        processor.onaudioprocess = function(e) {
+            // Her audio frame'i Float32Array olarak gelir
+            // Kopyasini alip diziye ekliyoruz
+            const channelData = e.inputBuffer.getChannelData(0);
+            audioData.push(new Float32Array(channelData));
+        };
+
+        source.connect(processor);
+        processor.connect(audioContext.destination);
+
+        rec = true;
+        mic.classList.add('rec');
+        mic.textContent = '\u23F9';
+        ss('Dinliyorum...');
+    } catch(e) {
+        ss('Mikrofon hatasi: ' + e.message, true);
+    }
+}
+
+function micStop(){
+    if (!rec) return;
+    rec = false;
+    mic.classList.remove('rec');
+    mic.textContent = '\u{1F3A4}';
+
+    // Processor ve stream'i kapat
+    if (processor) { processor.disconnect(); processor = null; }
+    if (audioStream) { audioStream.getTracks().forEach(t => t.stop()); audioStream = null; }
+
+    // PCM verisini WAV'a cevir
+    const wavBlob = pcmToWav(audioData, audioContext ? audioContext.sampleRate : 16000);
+    audioData = [];
+
+    if (audioContext) { audioContext.close(); audioContext = null; }
+
+    // Backend'e gonder
+    sendA(wavBlob);
+}
+
+function pcmToWav(chunks, sampleRate) {
+    // Tum PCM parcalarini birlestir
+    let totalLength = 0;
+    for (const c of chunks) totalLength += c.length;
+
+    const pcm = new Float32Array(totalLength);
+    let offset = 0;
+    for (const c of chunks) {
+        pcm.set(c, offset);
+        offset += c.length;
+    }
+
+    // Float32 -> Int16 (WAV standard formati)
+    const int16 = new Int16Array(pcm.length);
+    for (let i = 0; i < pcm.length; i++) {
+        const s = Math.max(-1, Math.min(1, pcm[i]));
+        int16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+
+    // WAV header olustur (44 byte header + PCM data)
+    const dataSize = int16.length * 2;
+    const buffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(buffer);
+
+    // RIFF header
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + dataSize, true);
+    writeString(view, 8, 'WAVE');
+
+    // fmt chunk
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);          // chunk size
+    view.setUint16(20, 1, true);           // PCM format
+    view.setUint16(22, 1, true);           // mono
+    view.setUint32(24, sampleRate, true);  // sample rate
+    view.setUint32(28, sampleRate * 2, true); // byte rate
+    view.setUint16(32, 2, true);           // block align
+    view.setUint16(34, 16, true);          // bits per sample
+
+    // data chunk
+    writeString(view, 36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    // PCM data yaz
+    const output = new Int16Array(buffer, 44);
+    output.set(int16);
+
+    return new Blob([buffer], { type: 'audio/wav' });
+}
+
+function writeString(view, offset, str) {
+    for (let i = 0; i < str.length; i++) {
+        view.setUint8(offset + i, str.charCodeAt(i));
+    }
+}
+
+// ═══ BACKEND ILETISIM ═══
+async function sendA(blob){
+    busy=true;mic.classList.add('wait');mic.disabled=true;hw();ss('Isleniyor...');const tid=stp();
+    try{
+        const fd=new FormData();
+        fd.append('audio', blob, 'recording.wav');  // WAV olarak gonder
+        if(sid) fd.append('session_id',sid);
+        const r=await fetch('/api/chat/'+SLUG,{method:'POST',body:fd});
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        const d=await r.json();if(d.session_id)sid=d.session_id;rtp(tid);
+        if(d.user_text)am('u',d.user_text);if(d.ai_text)am('a',d.ai_text);
+        if(d.ai_audio&&d.ai_audio.length>100)pa(d.ai_audio,d.audio_format||'wav');
+        ss('');
+    }catch(e){rtp(tid);ss('Hata: '+e.message,true);am('a','Bir sorun olustu.')}
+    finally{busy=false;mic.classList.remove('wait');mic.disabled=false}
+}
+
+async function sendT(){
+    const m=ti.value.trim();if(!m||busy)return;ti.value='';busy=true;mic.disabled=true;hw();am('u',m);const tid=stp();ss(AGENT+' dusunuyor...');
+    try{
+        const fd=new FormData();fd.append('message',m);if(sid)fd.append('session_id',sid);
+        const r=await fetch('/api/chat-text/'+SLUG,{method:'POST',body:fd});const d=await r.json();
+        if(d.session_id)sid=d.session_id;rtp(tid);
+        if(d.ai_text)am('a',d.ai_text);
+        if(d.ai_audio&&d.ai_audio.length>100)pa(d.ai_audio,d.audio_format||'wav');
+        ss('');
+    }catch(e){rtp(tid);ss('Hata: '+e.message,true)}
+    finally{busy=false;mic.disabled=false}
+}
+
+// ═══ SES CALMA ═══
+function pa(b64,fmt){
+    try{eac();const r=atob(b64),by=new Uint8Array(r.length);for(let i=0;i<r.length;i++)by[i]=r.charCodeAt(i);
+    const mm={'mp3':'audio/mpeg','wav':'audio/wav','ogg':'audio/ogg','webm':'audio/webm'};
+    const bl=new Blob([by],{type:mm[fmt]||'audio/wav'}),u=URL.createObjectURL(bl),a=new Audio(u);
+    a.onplay=()=>ss(AGENT+' konusuyor...');a.onended=()=>{ss('');URL.revokeObjectURL(u)};
+    a.onerror=()=>{ss('');URL.revokeObjectURL(u)};
+    a.play().catch(()=>{});}catch(e){console.error(e)}
+}
+
+// ═══ UI ═══
+function am(role,text){const d=document.createElement('div');d.className='msg '+role;const n=role==='u'?'Siz':AGENT;d.innerHTML='<div class="mn">'+n+'</div><div class="mb">'+esc(text)+'</div>';chatEl.appendChild(d);chatEl.scrollTop=chatEl.scrollHeight}
+function stp(){const id='t'+Date.now();const d=document.createElement('div');d.className='msg a';d.id=id;d.innerHTML='<div class="mn">'+AGENT+'</div><div class="mb"><div class="tp"><span></span><span></span><span></span></div></div>';chatEl.appendChild(d);chatEl.scrollTop=chatEl.scrollHeight;return id}
+function rtp(id){const e=document.getElementById(id);if(e)e.remove()}
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function hw(){if(wel&&wel.parentNode)wel.remove()}
+async function resetChat(){if(sid){try{const fd=new FormData();fd.append('session_id',sid);await fetch('/api/reset',{method:'POST',body:fd})}catch(e){}}sid=null;chatEl.innerHTML='<div class="welcome" id="wel"><h2>Merhaba! Ben '+AGENT+'.</h2><p>Mikrofon veya metin kutusuyla konusabilirsiniz.</p></div>';ss('')}
+</script>
+</body>
+</html>
